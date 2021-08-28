@@ -8,6 +8,7 @@ const authRouter = require("./routes/auth");
 const postRouter = require("./routes/post");
 const commentRouter = require("./routes/comment");
 const likeRouter = require("./routes/like");
+const friendshipRouter = require("./routes/friendship");
 
 const app = express();
 const mongoDB = process.env.DB;
@@ -22,6 +23,7 @@ app.use(authRouter);
 app.use(postRouter);
 app.use(commentRouter);
 app.use(likeRouter);
+app.use(friendshipRouter);
 
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
