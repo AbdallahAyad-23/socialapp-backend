@@ -42,8 +42,8 @@ exports.add = (req, res, next) => {
         pendingFriendship.save(),
         User.findById(requester),
       ]).then((values) => {
-        const [reqFriendship, recFriendship, req] = values;
-        req.friends.push(reqFriendship._id);
+        const [reqFriendship, recFriendship, reqUser] = values;
+        reqUser.friends.push(reqFriendship._id);
         ricipientUser.friends.push(recFriendship._id);
         Promise.all([req.save(), ricipientUser.save()]).then(() => {
           res.json({ message: "Success" });
