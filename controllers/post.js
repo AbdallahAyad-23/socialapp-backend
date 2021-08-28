@@ -1,5 +1,6 @@
 const Post = require("../models/post");
 const Comment = require("../models/comment");
+const Like = require("../models/like");
 const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 
@@ -23,6 +24,7 @@ exports.createPost = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
+
 // TODO: get post with likecount
 exports.getPost = (req, res, next) => {
   const id = req.params.postId;
@@ -38,6 +40,9 @@ exports.getPost = (req, res, next) => {
       fullPost = { ...post._doc };
       Comment.find({ postId: id }).then((comments) => {
         fullPost.comments = comments;
+      });
+      Like.countDocuments({ postId: id }).then((likesCount) => {
+        fullPost.likesCount = likesCount;
         return res.json(fullPost);
       });
     })
