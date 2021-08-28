@@ -25,7 +25,6 @@ exports.createPost = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-// TODO: get post with likecount
 exports.getPost = (req, res, next) => {
   const id = req.params.postId;
   let fullPost = {};
@@ -50,7 +49,6 @@ exports.getPost = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-// TODO: delete post with comments
 exports.deletePost = (req, res, next) => {
   const id = req.params.postId;
   Post.findById(mongoose.Types.ObjectId(id))
@@ -66,7 +64,8 @@ exports.deletePost = (req, res, next) => {
         return next(error);
       }
       Post.findByIdAndDelete(mongoose.Types.ObjectId(id)).then((post) => {
-        Comment.deleteMany({ postId: id }).then(() => {
+        Comment.deleteMany({ postId: id }).then(() => {});
+        Like.deleteMany({ postId: id }).then(() => {
           return res.json(post);
         });
       });
