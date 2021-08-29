@@ -10,6 +10,7 @@ exports.add = (req, res, next) => {
     error.statusCode = 401;
     return next(error);
   }
+
   User.findById(mongoose.Types.ObjectId(recipient))
     .populate("friends")
     .then((ricipientUser) => {
@@ -24,6 +25,15 @@ exports.add = (req, res, next) => {
         ).length !== 0
       ) {
         const error = new Error("You already sent a request");
+        error.statusCode = 401;
+        return next(error);
+      }
+      if (
+        ricipientUser.friends.filter(
+          (friend) => friend.recipient.toString() === requester.toString()
+        ).length !== 0
+      ) {
+        const error = new Error("This user already sent you a request");
         error.statusCode = 401;
         return next(error);
       }
