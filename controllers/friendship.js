@@ -74,7 +74,7 @@ exports.accept = (req, res, next) => {
             friend.requester.toString() === requester && friend.status == 2
         ).length === 0
       ) {
-        const error = new Error("Please send a request to this user");
+        const error = new Error("Error");
         error.statusCode = 401;
         return next(error);
       }
@@ -82,7 +82,6 @@ exports.accept = (req, res, next) => {
         requester: mongoose.Types.ObjectId(requester),
         recipient: mongoose.Types.ObjectId(recipient),
       }).then((requests) => {
-        console.log(requests);
         const [request1, request2] = requests;
         request1.status = 3;
         request2.status = 3;
@@ -92,8 +91,6 @@ exports.accept = (req, res, next) => {
       });
     });
 };
-
-// reject request
 
 // reject a request / unsend a request
 exports.reject = (req, res, next) => {
@@ -124,7 +121,8 @@ exports.reject = (req, res, next) => {
         requester: mongoose.Types.ObjectId(requester),
         recipient: mongoose.Types.ObjectId(recipient),
       }).then(() => {
-        const [reqFriendReq, recFriendReq] = requests;
+        const reqFriendReq = requests.find((req) => req.status == 1);
+        const recFriendReq = requests.find((req) => req.status == 2);
         const reqFriendReqId = reqFriendReq._id;
         const recFriendReqId = recFriendReq._id;
         Promise.all([
@@ -148,5 +146,55 @@ exports.reject = (req, res, next) => {
     });
 };
 
-// you can't remove a friend
-// make a solo remove route
+exports.unfriend = (req, res, next) => {
+  const requester = req.userId;
+  const recipient = req.params.friendId;
+  Friendship.find({})
+    .or([
+      {
+        requester: mongoose.Types.ObjectId(requester),
+        recipient: mongoose.Types.ObjectId(recipient),
+        status: 3,
+      },
+      {
+        requester: mongoose.Types.ObjectId(recipient),
+        recipient: mongoose.Types.ObjectId(requester),
+        status: 3,
+      },
+    ])
+    .then((requests) => {
+      if (requests.length === 0) {
+        const error = new Error("You aren't friends");
+        error.statusCode = 401;
+        return next(error);
+      }
+      const [req1, req2] = requests;
+      const req1Id = req1._id;
+      const req2Id = req2._id;
+      Promise.all([User.findById(requester), User.findById(recipient)]).then(
+        (users) => {
+          const [user1, user2] = users;
+          const user1Friends = user1.friends.filter(
+            (friend) =>
+              friend.toString() !== req1Id.toString() &&
+              friend.toString() !== req2Id.toString()
+          );
+          user1.friends = user1Friends;
+          const user2Friends = user2.friends.filter(
+            (friend) =>
+              friend.toString() !== req1Id.toString() &&
+              friend.toString() !== req2Id.toString()
+          );
+          user2.friends = user2Friends;
+          Promise.all([
+            user1.save(),
+            user2.save(),
+            Friendship.findByIdAndRemove(mongoose.Types.ObjectId(req1Id)),
+            Friendship.findByIdAndRemove(mongoose.Types.ObjectId(req2Id)),
+          ]).then(() => {
+            return res.json({ message: "success" });
+          });
+        }
+      );
+    });
+};
