@@ -9,12 +9,14 @@ const postRouter = require("./routes/post");
 const commentRouter = require("./routes/comment");
 const likeRouter = require("./routes/like");
 const friendshipRouter = require("./routes/friendship");
+const profileRouter = require("./routes/profile");
 
 const app = express();
 const mongoDB = process.env.DB;
 
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 
+app.use("/public", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 require("./util/passport");
@@ -24,6 +26,7 @@ app.use(postRouter);
 app.use(commentRouter);
 app.use(likeRouter);
 app.use(friendshipRouter);
+app.use(profileRouter);
 
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
