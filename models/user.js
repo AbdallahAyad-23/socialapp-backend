@@ -8,7 +8,10 @@ const userSchema = new Schema({
   username: String,
   hash: String,
   salt: String,
-  imageUrl: String,
+  imageUrl: {
+    type: String,
+    default: "default.png",
+  },
   googleId: String,
   friends: [{ type: Schema.Types.ObjectId, ref: "Friendship" }],
 });

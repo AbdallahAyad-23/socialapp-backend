@@ -16,7 +16,6 @@ const mongoDB = process.env.DB;
 
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.use("/public", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 require("./util/passport");
