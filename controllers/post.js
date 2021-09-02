@@ -1,8 +1,32 @@
 const Post = require("../models/post");
 const Comment = require("../models/comment");
 const Like = require("../models/like");
+const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
+
+exports.getAllPosts = (req, res, next) => {
+  const promises = [];
+  User.findById(mongoose.Types.ObjectId(req.userId))
+    .populate("friends")
+    .then((user) => {
+      let friends = user.friends
+        .filter((friend) => friend.status == 3)
+        .map((friend) => {
+          return friend.requester.toString() === req.userId.toString()
+            ? friend.recipient
+            : friend.requester;
+        });
+      promises.push(Post.find({ userId: mongoose.Types.ObjectId(req.userId) }));
+      friends.forEach((friend) => {
+        promises.push(Post.find({ userId: mongoose.Types.ObjectId(friend) }));
+      });
+      Promise.all(promises).then((results) => {
+        const posts = results.flat();
+        return res.json({ posts });
+      });
+    });
+};
 
 exports.createPost = (req, res, next) => {
   const errors = validationResult(req);

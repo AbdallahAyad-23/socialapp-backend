@@ -5,7 +5,7 @@ const { body } = require("express-validator");
 const router = express.Router();
 
 // TODO: get all posts
-
+router.get("/posts", isAuth, postController.getAllPosts);
 // create post
 router.post(
   "/posts",
