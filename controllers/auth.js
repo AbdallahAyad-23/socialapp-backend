@@ -26,6 +26,7 @@ exports.signup = (req, res, next) => {
     .then((existeduser) => {
       if (existeduser) {
         const error = new Error("This username is taken");
+        error.data = { username: error.message };
         error.statusCode = 422;
         return next(error);
       }
@@ -49,6 +50,7 @@ exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const error = new Error("A user with this email could not be found.");
+        error.data = { username: error.message };
         error.statusCode = 422;
         return next(error);
       }
@@ -66,6 +68,7 @@ exports.login = (req, res, next) => {
         );
       } else {
         const error = new Error("password is incorrect");
+        error.data = { password: error.message };
         error.statusCode = 422;
         return next(error);
       }

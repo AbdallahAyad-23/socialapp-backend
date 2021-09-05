@@ -37,6 +37,7 @@ router.get(
       { expiresIn: "1h" },
       (err, token) => {
         console.log(token);
+        res.redirect("/");
         return res.json({ token });
       }
     );
