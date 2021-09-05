@@ -49,7 +49,7 @@ exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const error = new Error("A user with this email could not be found.");
-        error.statusCode = 401;
+        error.statusCode = 422;
         return next(error);
       }
       const isValid = validatePassword(req.body.password, user.hash, user.salt);
@@ -66,7 +66,7 @@ exports.login = (req, res, next) => {
         );
       } else {
         const error = new Error("password is incorrect");
-        error.statusCode = 401;
+        error.statusCode = 422;
         return next(error);
       }
     })

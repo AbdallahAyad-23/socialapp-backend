@@ -10,7 +10,8 @@ exports.getAuthenticatedUser = (req, res, next) => {
     .populate("friends")
     .then((user) => {
       return res.json(user);
-    });
+    })
+    .catch((err) => next(err));
 };
 
 exports.getUser = (req, res, next) => {
@@ -18,12 +19,14 @@ exports.getUser = (req, res, next) => {
   User.findById(
     mongoose.Types.ObjectId(userId),
     "username firstname lastname friends imageUrl"
-  ).then((user) => {
-    Post.find({ userId }).then((posts) => {
-      let fullUserData = { user, posts };
-      return res.json(fullUserData);
-    });
-  });
+  )
+    .then((user) => {
+      Post.find({ userId }).then((posts) => {
+        let fullUserData = { user, posts };
+        return res.json(fullUserData);
+      });
+    })
+    .catch((err) => next(err));
 };
 
 exports.getAllUsers = (req, res, next) => {
@@ -31,5 +34,6 @@ exports.getAllUsers = (req, res, next) => {
     .select("username _id")
     .then((users) => {
       return res.json({ users });
-    });
+    })
+    .catch((err) => next(err));
 };

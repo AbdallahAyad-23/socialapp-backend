@@ -16,7 +16,7 @@ exports.createComment = (req, res, next) => {
     .then((post) => {
       if (!post) {
         const error = new Error("This post doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       const { content } = req.body;
@@ -40,12 +40,12 @@ exports.deleteComment = (req, res, next) => {
     .then((comment) => {
       if (!comment) {
         const error = new Error("This comment doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       if (comment.userId.toString() !== req.userId.toString()) {
         const error = new Error("You can't remove this comment");
-        error.statusCode = 401;
+        error.statusCode = 403;
         return next(error);
       }
       Comment.findByIdAndDelete(mongoose.Types.ObjectId(commentId)).then(
@@ -64,12 +64,12 @@ exports.editComment = (req, res, next) => {
     .then((comment) => {
       if (!comment) {
         const error = new Error("This comment doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       if (comment.userId.toString() !== req.userId.toString()) {
         const error = new Error("You can't edit this comment");
-        error.statusCode = 401;
+        error.statusCode = 403;
         return next(error);
       }
       comment.content = content;

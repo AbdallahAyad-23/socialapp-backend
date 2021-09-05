@@ -25,7 +25,8 @@ exports.getAllPosts = (req, res, next) => {
         const posts = results.flat();
         return res.json({ posts });
       });
-    });
+    })
+    .catch((err) => next(err));
 };
 
 exports.createPost = (req, res, next) => {
@@ -57,7 +58,7 @@ exports.getPost = (req, res, next) => {
     .then((post) => {
       if (!post) {
         const error = new Error("This post doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       fullPost = { ...post._doc };
@@ -79,12 +80,12 @@ exports.deletePost = (req, res, next) => {
     .then((post) => {
       if (!post) {
         const error = new Error("This post doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       if (post.userId.toString() !== req.userId.toString()) {
         const error = new Error("You can't remove this post");
-        error.statusCode = 401;
+        error.statusCode = 403;
         return next(error);
       }
       Post.findByIdAndDelete(mongoose.Types.ObjectId(id)).then((post) => {
@@ -104,12 +105,12 @@ exports.editPost = (req, res, next) => {
     .then((post) => {
       if (!post) {
         const error = new Error("This post doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       if (post.userId.toString() !== req.userId.toString()) {
         const error = new Error("You can't edit this post");
-        error.statusCode = 401;
+        error.statusCode = 403;
         return next(error);
       }
       post.content = content;

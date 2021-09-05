@@ -7,7 +7,7 @@ exports.add = (req, res, next) => {
   const recipient = req.params.friendId;
   if (recipient.toString() === requester.toString()) {
     const error = new Error("Error");
-    error.statusCode = 401;
+    error.statusCode = 400;
     return next(error);
   }
 
@@ -16,7 +16,7 @@ exports.add = (req, res, next) => {
     .then((ricipientUser) => {
       if (!ricipientUser) {
         const error = new Error("This user doesn't exist");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       if (
@@ -25,7 +25,7 @@ exports.add = (req, res, next) => {
         ).length !== 0
       ) {
         const error = new Error("You already sent a request");
-        error.statusCode = 401;
+        error.statusCode = 403;
         return next(error);
       }
       if (
@@ -34,7 +34,7 @@ exports.add = (req, res, next) => {
         ).length !== 0
       ) {
         const error = new Error("This user already sent you a request");
-        error.statusCode = 401;
+        error.statusCode = 403;
         return next(error);
       }
       const requestFriendship = new Friendship({
@@ -75,7 +75,7 @@ exports.accept = (req, res, next) => {
         ).length === 0
       ) {
         const error = new Error("Error");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       Friendship.find({
@@ -110,11 +110,11 @@ exports.reject = (req, res, next) => {
         const error = new Error(
           "You didn't send a friend request to this user"
         );
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       } else if (requests.length === 0 && !req.query.unsend) {
         const error = new Error("This user didn't send you a friend request");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       Friendship.deleteMany({
@@ -165,7 +165,7 @@ exports.unfriend = (req, res, next) => {
     .then((requests) => {
       if (requests.length === 0) {
         const error = new Error("You aren't friends");
-        error.statusCode = 401;
+        error.statusCode = 400;
         return next(error);
       }
       const [req1, req2] = requests;
