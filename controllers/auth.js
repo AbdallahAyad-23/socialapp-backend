@@ -26,7 +26,7 @@ exports.signup = (req, res, next) => {
     .then((existeduser) => {
       if (existeduser) {
         const error = new Error("This username is taken");
-        error.statusCode = 400;
+        error.statusCode = 422;
         return next(error);
       }
       user.save().then((newUser) => {
