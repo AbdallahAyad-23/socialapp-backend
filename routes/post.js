@@ -13,7 +13,7 @@ router.post(
   body("content").notEmpty(),
   postController.createPost
 );
-router.get("/posts/:postId", isAuth, postController.getPost);
+router.get("/posts/:postId", isAuth, postController.getPostDetails);
 // delete post with comments
 router.delete("/posts/:postId", isAuth, postController.deletePost);
 // edit post

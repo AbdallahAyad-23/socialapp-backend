@@ -60,23 +60,21 @@ exports.createPost = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-exports.getPost = (req, res, next) => {
+exports.getPostDetails = (req, res, next) => {
   const id = req.params.postId;
   let fullPost = {};
   Post.findById(id)
-    .populate("userId", "_id username")
     .then((post) => {
       if (!post) {
         const error = new Error("This post doesn't exist");
         error.statusCode = 400;
         return next(error);
       }
-      fullPost = { ...post._doc };
       Comment.find({ postId: id }).then((comments) => {
         fullPost.comments = comments;
       });
-      Like.countDocuments({ postId: id }).then((likesCount) => {
-        fullPost.likesCount = likesCount;
+      Like.find({ postId: id }).then((likes) => {
+        fullPost.likes = likes;
         return res.json(fullPost);
       });
     })
