@@ -25,7 +25,7 @@ exports.like = (req, res, next) => {
         like.save().then((like) => {
           post.likesCount = post.likesCount + 1;
           post.save().then((newPost) => {
-            return res.json(newPost);
+            return res.json(like);
           })
           
         });
@@ -36,7 +36,6 @@ exports.like = (req, res, next) => {
 
 exports.unlike = (req, res, next) => {
   const postId = req.params.postId;
-  const likeId = req.params.likeId;
   Post.findById(mongoose.Types.ObjectId(postId))
     .then((post) => {
       if (!post) {
@@ -44,7 +43,7 @@ exports.unlike = (req, res, next) => {
         error.statusCode = 400;
         return next(error);
       }
-      Like.findById(mongoose.Types.ObjectId(likeId)).then((like) => {
+      Like.findOne({ postId, userId: req.userId }).then((like) => {
         if (!like) {
           const error = new Error("You didn't like this post");
           error.statusCode = 400;
@@ -55,14 +54,13 @@ exports.unlike = (req, res, next) => {
           error.statusCode = 403;
           return next(error);
         }
-        Like.findByIdAndDelete(mongoose.Types.ObjectId(likeId)).then((like) => {
+        Like.findOneAndDelete({ postId, userId: req.userId }).then((like) => {
           post.likesCount = post.likesCount - 1
           post.save().then(newPost => {
-            return res.json(newPost);
+            return res.json(like);
           })
-         
-        });
-      });
+        })
+      })
     })
 
     .catch((err) => next(err));

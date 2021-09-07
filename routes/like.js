@@ -5,6 +5,6 @@ const likeController = require("../controllers/like");
 
 router.post("/posts/:postId/likes", isAuth, likeController.like);
 
-router.delete("/posts/:postId/likes/:likeId", isAuth, likeController.unlike);
+router.delete("/posts/:postId/likes", isAuth, likeController.unlike);
 
 module.exports = router;

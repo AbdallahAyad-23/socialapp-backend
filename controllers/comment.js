@@ -28,7 +28,7 @@ exports.createComment = (req, res, next) => {
       comment.save().then((comment) => {
         post.commentsCount = post.commentsCount + 1;
         post.save().then(newPost => {
-          return res.json(newPost);
+          return res.json(comment);
 
         })
       });
@@ -62,7 +62,7 @@ exports.deleteComment = (req, res, next) => {
         (comment) => {
           post.commentsCount = post.commentsCount - 1
           post.save().then(newPost => {
-            return res.json(newPost);
+            return res.json(comment);
           })
           
         }
