@@ -26,7 +26,11 @@ exports.createComment = (req, res, next) => {
         postId: req.params.postId,
       });
       comment.save().then((comment) => {
-        return res.json(comment);
+        post.commentsCount = post.commentsCount + 1;
+        post.save().then(newPost => {
+          return res.json(newPost);
+
+        })
       });
     })
 
@@ -36,7 +40,13 @@ exports.createComment = (req, res, next) => {
 exports.deleteComment = (req, res, next) => {
   const postId = req.params.postId;
   const commentId = req.params.commentId;
-  Comment.findById(mongoose.Types.ObjectId(commentId))
+  Post.findById(mongoose.Types.ObjectId(postId)).then(post => {
+    if (!post) {
+      const error = new Error("This post doesn't exist");
+      error.statusCode = 400;
+      return next(error);
+    }
+    Comment.findById(mongoose.Types.ObjectId(commentId))
     .then((comment) => {
       if (!comment) {
         const error = new Error("This comment doesn't exist");
@@ -50,11 +60,17 @@ exports.deleteComment = (req, res, next) => {
       }
       Comment.findByIdAndDelete(mongoose.Types.ObjectId(commentId)).then(
         (comment) => {
-          return res.json(comment);
+          post.commentsCount = post.commentsCount - 1
+          post.save().then(newPost => {
+            return res.json(newPost);
+          })
+          
         }
       );
     })
-    .catch((err) => next(err));
+    
+  }).catch((err) => next(err));
+  
 };
 
 exports.editComment = (req, res, next) => {

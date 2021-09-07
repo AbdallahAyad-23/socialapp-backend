@@ -17,9 +17,19 @@ exports.getAllPosts = (req, res, next) => {
             ? friend.recipient
             : friend.requester;
         });
-      promises.push(Post.find({ userId: mongoose.Types.ObjectId(req.userId) }).populate("userId"));
+      promises.push(
+        Post.find({ userId: mongoose.Types.ObjectId(req.userId) }).populate(
+          "userId",
+          "username imageUrl _id"
+        )
+      );
       friends.forEach((friend) => {
-        promises.push(Post.find({ userId: mongoose.Types.ObjectId(friend) }).populate("userId"));
+        promises.push(
+          Post.find({ userId: mongoose.Types.ObjectId(friend) }).populate(
+            "userId",
+            "username imageUrl _id"
+          )
+        );
       });
       Promise.all(promises).then((results) => {
         const posts = results.flat();

@@ -23,7 +23,11 @@ exports.like = (req, res, next) => {
           userId: req.userId,
         });
         like.save().then((like) => {
-          return res.json(like);
+          post.likesCount = post.likesCount + 1;
+          post.save().then((newPost) => {
+            return res.json(newPost);
+          })
+          
         });
       });
     })
@@ -52,7 +56,11 @@ exports.unlike = (req, res, next) => {
           return next(error);
         }
         Like.findByIdAndDelete(mongoose.Types.ObjectId(likeId)).then((like) => {
-          return res.json(like);
+          post.likesCount = post.likesCount - 1
+          post.save().then(newPost => {
+            return res.json(newPost);
+          })
+         
         });
       });
     })
