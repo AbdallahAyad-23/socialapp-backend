@@ -26,11 +26,10 @@ exports.createComment = (req, res, next) => {
         postId: req.params.postId,
       });
       comment.save().then((comment) => {
-        post.commentsCount = post.commentsCount + 1;
-        post.save().then(newPost => {
+        post.comments.push(comment);
+        post.save().then((newPost) => {
           return res.json(comment);
-
-        })
+        });
       });
     })
 
@@ -40,37 +39,37 @@ exports.createComment = (req, res, next) => {
 exports.deleteComment = (req, res, next) => {
   const postId = req.params.postId;
   const commentId = req.params.commentId;
-  Post.findById(mongoose.Types.ObjectId(postId)).then(post => {
-    if (!post) {
-      const error = new Error("This post doesn't exist");
-      error.statusCode = 400;
-      return next(error);
-    }
-    Comment.findById(mongoose.Types.ObjectId(commentId))
-    .then((comment) => {
-      if (!comment) {
-        const error = new Error("This comment doesn't exist");
+  Post.findById(mongoose.Types.ObjectId(postId))
+    .then((post) => {
+      if (!post) {
+        const error = new Error("This post doesn't exist");
         error.statusCode = 400;
         return next(error);
       }
-      if (comment.userId.toString() !== req.userId.toString()) {
-        const error = new Error("You can't remove this comment");
-        error.statusCode = 403;
-        return next(error);
-      }
-      Comment.findByIdAndDelete(mongoose.Types.ObjectId(commentId)).then(
-        (comment) => {
-          post.commentsCount = post.commentsCount - 1
-          post.save().then(newPost => {
-            return res.json(comment);
-          })
-          
+      Comment.findById(mongoose.Types.ObjectId(commentId)).then((comment) => {
+        if (!comment) {
+          const error = new Error("This comment doesn't exist");
+          error.statusCode = 400;
+          return next(error);
         }
-      );
+        if (comment.userId.toString() !== req.userId.toString()) {
+          const error = new Error("You can't remove this comment");
+          error.statusCode = 403;
+          return next(error);
+        }
+        Comment.findByIdAndDelete(mongoose.Types.ObjectId(commentId)).then(
+          (comment) => {
+            post.comments = post.comments.filter(
+              (ele) => ele.toString() !== comment._id.toString()
+            );
+            post.save().then((newPost) => {
+              return res.json(comment);
+            });
+          }
+        );
+      });
     })
-    
-  }).catch((err) => next(err));
-  
+    .catch((err) => next(err));
 };
 
 exports.editComment = (req, res, next) => {

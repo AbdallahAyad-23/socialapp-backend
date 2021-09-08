@@ -12,9 +12,8 @@ exports.like = (req, res, next) => {
         return next(error);
       }
       Like.findOne({ postId, userId: req.userId }).then((existedLike) => {
-        console.log(existedLike);
         if (existedLike) {
-          const error = new Error("You already liked this post");
+          const error = new Error("You already liked this post!");
           error.statusCode = 400;
           return next(error);
         }
@@ -22,12 +21,10 @@ exports.like = (req, res, next) => {
           postId,
           userId: req.userId,
         });
-        like.save().then((like) => {
-          post.likesCount = post.likesCount + 1;
-          post.save().then((newPost) => {
-            return res.json(like);
-          })
-          
+        like.save().then((likeDoc) => {
+          post.save().then(() => {
+            return res.json(likeDoc);
+          });
         });
       });
     })
@@ -43,24 +40,23 @@ exports.unlike = (req, res, next) => {
         error.statusCode = 400;
         return next(error);
       }
-      Like.findOne({ postId, userId: req.userId }).then((like) => {
-        if (!like) {
+      Like.findOne({
+        postId: mongoose.Types.ObjectId(postId),
+        userId: mongoose.Types.ObjectId(req.userId),
+      }).then((existedLike) => {
+        if (!existedLike) {
           const error = new Error("You didn't like this post");
           error.statusCode = 400;
           return next(error);
         }
-        if (like.userId.toString() !== req.userId.toString()) {
-          const error = new Error("You can't unlike this post");
-          error.statusCode = 403;
-          return next(error);
-        }
-        Like.findOneAndDelete({ postId, userId: req.userId }).then((like) => {
-          post.likesCount = post.likesCount - 1
-          post.save().then(newPost => {
-            return res.json(like);
-          })
-        })
-      })
+        Like.findOneAndDelete({ postId, userId: req.userId }).then(
+          (likeDoc) => {
+            post.save().then(() => {
+              return res.json(likeDoc);
+            });
+          }
+        );
+      });
     })
 
     .catch((err) => next(err));
