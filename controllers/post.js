@@ -60,23 +60,38 @@ exports.createPost = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-exports.getPostDetails = (req, res, next) => {
+exports.getPostComments = (req, res, next) => {
   const id = req.params.postId;
-  let fullPost = {};
-  Post.findById(id)
+  Post.findById(mongoose.Types.ObjectId(id))
     .then((post) => {
       if (!post) {
         const error = new Error("This post doesn't exist");
         error.statusCode = 400;
         return next(error);
       }
-      Comment.find({ postId: id }).then((comments) => {
-        fullPost.comments = comments;
-      });
-      Like.find({ postId: id }).then((likes) => {
-        fullPost.likes = likes;
-        return res.json(fullPost);
-      });
+      Comment.find({ postId: id })
+        .populate("userId", "username imageUrl _id")
+        .then((comments) => {
+          return res.json(comments);
+        });
+    })
+    .catch((err) => next(err));
+};
+exports.getPostLikes = (req, res, next) => {
+  const id = req.params.postId;
+  Post.findById(mongoose.Types.ObjectId(id))
+    .then((post) => {
+      if (!post) {
+        const error = new Error("This post doesn't exist");
+        error.statusCode = 400;
+        return next(error);
+      }
+
+      Like.find({ postId: id })
+        .populate("userId", "username _id")
+        .then((likes) => {
+          return res.json(likes);
+        });
     })
 
     .catch((err) => next(err));
@@ -97,9 +112,10 @@ exports.deletePost = (req, res, next) => {
         return next(error);
       }
       Post.findByIdAndDelete(mongoose.Types.ObjectId(id)).then((post) => {
-        Comment.deleteMany({ postId: id }).then(() => {});
-        Like.deleteMany({ postId: id }).then(() => {
-          return res.json(post);
+        Comment.deleteMany({ postId: id }).then(() => {
+          Like.deleteMany({ postId: id }).then(() => {
+            return res.json(post);
+          });
         });
       });
     })
