@@ -6,6 +6,7 @@ const router = express.Router();
 // get authenticated user
 router.get("/user", isAuth, userController.getAuthenticatedUser);
 
+router.get("/user/friends", isAuth, userController.getUserFriendRequests);
 // get a specific user
 router.get("/users/:userId", isAuth, userController.getUser);
 

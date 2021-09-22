@@ -56,7 +56,7 @@ exports.add = (req, res, next) => {
         reqUser.friends.push(reqFriendship._id);
         ricipientUser.friends.push(recFriendship._id);
         Promise.all([reqUser.save(), ricipientUser.save()]).then(() => {
-          res.json({ message: "Success" });
+          res.json(reqFriendship);
         });
       });
     });
@@ -84,9 +84,12 @@ exports.accept = (req, res, next) => {
       }).then((requests) => {
         const [request1, request2] = requests;
         request1.status = 3;
-        request2.status = 3;
-        Promise.all([request1.save(), request2.save()]).then(() => {
-          return res.json({ message: "Success" });
+        Promise.all([
+          request1.save(),
+          Friendship.findByIdAndDelete(request2._id),
+        ]).then((values) => {
+          const [request, deletedReq] = values;
+          return res.json(request);
         });
       });
     });
@@ -163,38 +166,45 @@ exports.unfriend = (req, res, next) => {
       },
     ])
     .then((requests) => {
-      if (requests.length === 0) {
+      if (!requests[0]) {
         const error = new Error("You aren't friends");
         error.statusCode = 400;
         return next(error);
       }
-      const [req1, req2] = requests;
-      const req1Id = req1._id;
-      const req2Id = req2._id;
-      Promise.all([User.findById(requester), User.findById(recipient)]).then(
-        (users) => {
-          const [user1, user2] = users;
-          const user1Friends = user1.friends.filter(
-            (friend) =>
-              friend.toString() !== req1Id.toString() &&
-              friend.toString() !== req2Id.toString()
-          );
-          user1.friends = user1Friends;
-          const user2Friends = user2.friends.filter(
-            (friend) =>
-              friend.toString() !== req1Id.toString() &&
-              friend.toString() !== req2Id.toString()
-          );
-          user2.friends = user2Friends;
-          Promise.all([
-            user1.save(),
-            user2.save(),
-            Friendship.findByIdAndRemove(mongoose.Types.ObjectId(req1Id)),
-            Friendship.findByIdAndRemove(mongoose.Types.ObjectId(req2Id)),
-          ]).then(() => {
-            return res.json({ message: "success" });
-          });
-        }
-      );
+      Friendship.findByIdAndDelete(
+        mongoose.Types.ObjectId(requests[0]._id)
+      ).then((deletedRequest) => {
+        console.log(deletedRequest);
+        return res.json(deletedRequest);
+      });
+      // console.log(requests);
+      // const [req1, req2] = requests;
+      // const req1Id = req1._id;
+      // const req2Id = req2._id;
+      // Promise.all([User.findById(requester), User.findById(recipient)]).then(
+      //   (users) => {
+      //     const [user1, user2] = users;
+      //     const user1Friends = user1.friends.filter(
+      //       (friend) =>
+      //         friend.toString() !== req1Id.toString() &&
+      //         friend.toString() !== req2Id.toString()
+      //     );
+      //     user1.friends = user1Friends;
+      //     const user2Friends = user2.friends.filter(
+      //       (friend) =>
+      //         friend.toString() !== req1Id.toString() &&
+      //         friend.toString() !== req2Id.toString()
+      //     );
+      //     user2.friends = user2Friends;
+      //     Promise.all([
+      //       user1.save(),
+      //       user2.save(),
+      //       Friendship.findByIdAndRemove(mongoose.Types.ObjectId(req1Id)),
+      //       Friendship.findByIdAndRemove(mongoose.Types.ObjectId(req2Id)),
+      //     ]).then(() => {
+      //       return res.json({ message: "success" });
+      //     });
+      //   }
+      // );
     });
 };
