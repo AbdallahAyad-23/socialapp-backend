@@ -37,4 +37,4 @@ app.use((error, req, res, next) => {
   res.status(status).json({ error: error.message, data: error.data });
 });
 
-app.listen(5000);
+app.listen(process.env.PORT || 5000);
